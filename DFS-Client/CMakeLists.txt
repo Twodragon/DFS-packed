@@ -1,0 +1,28 @@
+cmake_minimum_required(VERSION 3.6)
+project(DFS_client)
+
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+
+
+set(Boost_USE_STATIC_LIBS        OFF) # only find static libs
+set(Boost_USE_MULTITHREADED      ON)
+find_package(Boost 1.65.1 COMPONENTS thread filesystem system date_time REQUIRED)
+if(Boost_FOUND)
+    INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
+    LINK_DIRECTORIES(${Boost_LIBRARY_DIRS})
+    #include_directories(${Boost_INCLUDE_DIRS})
+
+
+    #target_link_libraries(DFS ${Boost_FILESYSTEM_LIBRARY} ${Boost_LIBRARIES})
+endif(Boost_FOUND)
+
+SET(USED_LIBS ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY} ${Boost_REGEX_LIBRARY})
+
+add_executable(DFS_client Client_Server/main_client_server.cpp Client_Server/Client_Server.cpp Client_Server/Client_Server.h Client_Server/main_client_server.cpp utils/Server_Message.h utils/Server_Message.cpp Base_Classes/Server.h Base_Classes/Server_Group.cpp Base_Classes/Server_Group.h)
+
+TARGET_LINK_LIBRARIES(DFS_client ${USED_LIBS} -lpthread -lm)
+
+
+
+
