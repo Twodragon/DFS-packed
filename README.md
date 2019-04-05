@@ -2,7 +2,7 @@
 By Efimochkin Sergey, 597
 
 
-Work in progress, may be buggy,
+Work in progress, may be buggy.
 
 Master and one Slave server are already running on yandex.cloud.
 
