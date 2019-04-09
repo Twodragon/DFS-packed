@@ -1,6 +1,7 @@
 //
 // Created by Сергей Ефимочкин on 10.05.2018.
 //
+#define BOOST_USE_VALGRIND
 #include <sys/socket.h>
 #include <stdio.h>
 #include <stdlib.h>

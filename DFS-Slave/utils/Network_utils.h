@@ -4,6 +4,7 @@
 
 #ifndef FILE_SYSTEM_NETWORK_UTILS_H
 #define FILE_SYSTEM_NETWORK_UTILS_H
+#define BOOST_USE_VALGRIND
 
 int safe_parse_input(int sock, char* input, short first_size, short second_size, short third_size,
                      char* first_arg, char* second_arg, char* third_arg);

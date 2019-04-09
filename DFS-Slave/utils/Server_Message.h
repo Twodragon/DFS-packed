@@ -4,6 +4,7 @@
 
 #ifndef DFS_SERVER_MESSAGE_H
 #define DFS_SERVER_MESSAGE_H
+#define BOOST_USE_VALGRIND
 
 #include <cstdio>
 #include <cstdlib>

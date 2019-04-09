@@ -5,6 +5,7 @@
 #include "FS_Handler.h"
 //#include "../master_fs/FileSystem.h"
 #include <algorithm>
+#include <memory>
 
 FS_Handler::FS_Handler(): fs_mutex(new std::mutex()), counter_mutex(new std::mutex()){
 
@@ -20,14 +21,16 @@ FS_Handler::FS_Handler(): fs_mutex(new std::mutex()), counter_mutex(new std::mut
     }
 }
 
-std::string FS_Handler::do_command(int client_id, const std::string& command, const std::string& first_arg, const std::string& second_arg){
+std::string FS_Handler::do_command(int client_id, const std::string& command, const std::string& first_arg, const std::string& second_arg, short &failed){
+    printf("FS_Handler::do_command\n");
+
     printf("%d\n", client_id);
     auto it = clients_cur_directories.find(client_id);
 
     if(it == clients_cur_directories.end())
     {
         inode * root_copy = root;
-        clients_cur_directories[client_id] = &root_copy;
+        clients_cur_directories.insert({client_id, std::make_shared<struct inode *>(root_copy)});
     }
 
     int number_of_arguments = 0;
@@ -41,44 +44,45 @@ std::string FS_Handler::do_command(int client_id, const std::string& command, co
     std::string answer;
 
     if(command.find(std::string("ls")) == 0){
-        char* output = ls(sb, *clients_cur_directories[client_id], this);
+        char* output = ls(sb, clients_cur_directories[client_id].get(), this);
         answer = std::string(output);
         std::replace( answer.begin(), answer.end(), '\n', ' ');
-        if((*clients_cur_directories[client_id])->number_of_files_in_directory > 0)
+        if(is_directory_with_files(clients_cur_directories[client_id].get()))
             free(output);
     }
 
     else if (command.find(std::string("mkdir")) == 0){
         if(number_of_arguments == 1)
-            answer =  std::string("Not sufficient arguments!");
+            answer =  std::string("Not enough arguments!");
         else {
             bool error = false;
             answer = check_directory(first_arg.length(), error);
             if (!error) {
                 add_file(first_arg.length());
-                answer = mkdirf(sb, first_arg.c_str(), *clients_cur_directories[client_id], this);
+                answer = mkdirf(sb, first_arg.c_str(), clients_cur_directories[client_id].get(), this);
             }
         }
     }
 
     else if (command.find(std::string("rmdir")) == 0){
         if(number_of_arguments == 1)
-            answer =  std::string("Not sufficient arguments!");
+            answer =  std::string("Not enough arguments!");
         else {
             rm_file(first_arg.length());
-            answer = rm_dir(sb, first_arg.c_str(), *clients_cur_directories[client_id], this, client_id);
+            answer = rm_dir(sb, first_arg.c_str(), clients_cur_directories[client_id].get(), this, client_id);
         }
     }
 
     else if (command.find(std::string("touch")) == 0){
         if(number_of_arguments < 3)
-            answer =  std::string("Not sufficient arguments!");
+            answer =  std::string("Not enough arguments!");
         else {
             bool error = false;
             answer = check_new_file(first_arg.length(), second_arg.length(), error);
             if (!error) {
                 add_file(first_arg.length());
-                answer = touch(sb, first_arg.c_str(), second_arg.c_str(), *clients_cur_directories[client_id], this,
+
+                answer = touch(sb, first_arg.c_str(), second_arg.c_str(), clients_cur_directories[client_id].get(), this,
                                client_id);
             }
         }
@@ -86,41 +90,47 @@ std::string FS_Handler::do_command(int client_id, const std::string& command, co
 
     else if (command.find(std::string("rm")) == 0){
         if(number_of_arguments == 1)
-            answer =  std::string("Not sufficient arguments!");
+            answer =  std::string("Not enough arguments!");
         else {
             rm_file(first_arg.length());
-            answer = rm(sb, first_arg.c_str(), *clients_cur_directories[client_id], this, client_id);
+            answer = rm(sb, first_arg.c_str(), clients_cur_directories[client_id].get(), this, client_id);
         }
     }
 
     else if (command.find(std::string("read")) == 0){
         if(number_of_arguments == 1)
-            answer =  std::string("Not sufficient arguments!");
+            answer =  std::string("Not enough arguments!");
         else {
-            short failed = 0;
-            char *output = read_file(sb, first_arg.c_str(), *clients_cur_directories[client_id], &failed, this, client_id);
+            printf("client id: %d\n", client_id);
+            char *output = read_file(sb, first_arg.c_str(), clients_cur_directories[client_id].get(), &failed, this, client_id);
+            //if (!failed)
+            printf("failed: %d\n", failed);
             answer =  std::string(output);
+            //if (failed == 2) {
+            //    inode * root_copy = root;
+            //    clients_cur_directories[client_id] = &root_copy;
+            //}
 
         }
     }
 
     else if (command.find(std::string("cd")) == 0){
         if(number_of_arguments == 1)
-            answer =  std::string("Not sufficient arguments!");
+            answer =  std::string("Not enough arguments!");
         else {
-            answer = cd(sb, first_arg.c_str(), clients_cur_directories[client_id], this);
+            answer = cd(sb, first_arg.c_str(), clients_cur_directories[client_id].get(), this);
         }
     }
 
     else if (command.find(std::string("import")) == 0){
         if(number_of_arguments < 3)
-            answer =  std::string("Not sufficient arguments!");
+            answer =  std::string("Not enough arguments!");
         else {
             bool error = false;
             answer = check_new_file(first_arg.length(), second_arg.length(), error);
             if (!error) {
                 add_file(first_arg.length());
-                answer = touch(sb, first_arg.c_str(), second_arg.c_str(), *clients_cur_directories[client_id], this,
+                answer = touch(sb, first_arg.c_str(), second_arg.c_str(), clients_cur_directories[client_id].get(), this,
                                client_id);
             }
         }
@@ -128,10 +138,10 @@ std::string FS_Handler::do_command(int client_id, const std::string& command, co
 
     else if (command.find(std::string("export")) == 0){
         if(number_of_arguments < 3)
-            answer =  std::string("Not sufficient arguments!");
+            answer =  std::string("Not enough arguments!");
         else {
             short failed = 0;
-            char *output = read_file(sb, first_arg.c_str(), *clients_cur_directories[client_id], &failed, this, client_id);
+            char *output = read_file(sb, first_arg.c_str(), clients_cur_directories[client_id].get(), &failed, this, client_id);
             answer =  std::string(output);
             //if(failed != 1) {
             //    free(output);
@@ -156,8 +166,7 @@ std::string FS_Handler::do_command(int client_id, const std::string& command, co
                           "read $name$ to print text of file named $name$\nimport $outer name$ $inner name$ to import "
                           "file named $outer name$ from computer's file system and save it as file named $inner name$ in "
                           "this file system\nexport $inner name$ $outer name$ to export file named $inner name$ into "
-                          "computer's file system as a file named $outername$\nsave to save all changes made in "
-                          "the filesystem\nexit to save and exit");
+                          "computer's file system as a file named $outername$\nexit to exit");
     }
 
     else if (command.find(std::string("exit")) == 0) {
@@ -181,21 +190,23 @@ void FS_Handler::add_pointer_to_slaves_group(Server_Group *slaves_group){
 }
 
 void FS_Handler::store_data_in_slave(int id,  int inode_id, char *data) {
+    printf("FS_Handler::store_data_in_slave\n");
     std::string
             message = "command: to_store id: " + std::to_string(id) + " first_arg: " + std::to_string(inode_id) + " second_arg: " + data;
     slaves_group_->send_command(message);
 }
 
 void FS_Handler::read_data_in_slave(int id, int inode_id) {
+    printf("FS_Handler::read_data_in_slave\n");
     std::string
             message = "command: to_read id: " + std::to_string(id) + " first_arg: " + std::to_string(inode_id) + " second_arg: ";
     slaves_group_->send_command(message);
 }
 
 void FS_Handler::free_data_in_slave(int id, int inode_id) {
+    printf("FS_Handler::free_data_in_slave\n");
     std::string
             message = "command: to_free id: " + std::to_string(id) + " first_arg: " + std::to_string(inode_id) + " second_arg: ";
-    free(name);
     slaves_group_->send_command(message);
 }
 
@@ -224,7 +235,7 @@ std::string FS_Handler::get_fs_info(){
 }
 
 void FS_Handler::client_leave(int client_id){
-    struct inode** current_directory = clients_cur_directories[client_id];
+    struct inode** current_directory = clients_cur_directories[client_id].get();
     while (&(sb->inods_array[(*current_directory)->index_of_owner_inode]) != sb->inods_array){ //going up to the root
         inode_locks[*current_directory]->unlock_shared();
         *current_directory = &(sb->inods_array[(*current_directory)->index_of_owner_inode]);

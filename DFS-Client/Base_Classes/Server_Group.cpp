@@ -2,7 +2,6 @@
 // Created by Сергей Ефимочкин on 2019-01-30.
 //
 
-
 #include "Server_Group.h"
 #include <sstream>
 
@@ -17,7 +16,7 @@ void Server_Group::join(server_participant_ptr server)
     int id = current_id.fetch_add(1);
     participants_.insert({id, server});
     std::string id_string = "id: " + std::to_string(id);
-    continuous_messages.insert({server, std::string("")});
+    continuous_messages.insert({server, std::shared_ptr<std::string>::make_shared(std::string(""))});
     (*server).write_possible_sequence(id_string);
 
 
@@ -56,18 +55,18 @@ void Server_Group::ping(){
 
 void Server_Group::parse_possible_sequence(server_participant_ptr server, std::string message, int header_code){
     if (header_code == 2) {
-        if (strcmp(continuous_messages[server].c_str(), "") == 0) {
-            std::cout << continuous_messages[server] << "\n";
+        if (strcmp((*continuous_messages[server]).c_str(), "") == 0) {
+            std::cout << *continuous_messages[server] << "\n";
             parse(server, message);
         } else {
-            continuous_messages[server] = continuous_messages[server] + message;
+            *continuous_messages[server] = *continuous_messages[server] + message;
             std::cout << continuous_messages[server] << "\n";
-            parse(server, continuous_messages[server]);
-            continuous_messages[server] = "";
+            parse(server, *continuous_messages[server]);
+            *continuous_messages[server] = "";
         }
     }
     else{
-        continuous_messages[server] = continuous_messages[server] + message;
+        *continuous_messages[server] = *continuous_messages[server] + message;
     }
 
 }

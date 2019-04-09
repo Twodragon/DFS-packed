@@ -2,14 +2,12 @@
 By Efimochkin Sergey, 597
 
 
-Work in progress, may be buggy
-
 # File System
 ext2-like File System by Efimochkin Sergey.
 
 In runtime whole file system is also stored in dynamic memory.
 
-Number of files is pre-set as *NUMBER_OF_INODES*.
+Number of files is pre-set as *NUMBER_OF_INODES=1024*.
 
 
 **Supported commands list**

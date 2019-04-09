@@ -18,8 +18,10 @@ if(Boost_FOUND)
 endif(Boost_FOUND)
 
 SET(USED_LIBS ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY} ${Boost_REGEX_LIBRARY})
+set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
+set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
 
-add_executable(DFS main.cpp master_fs/superblock.h master_fs/inode.h master_fs/FileSystem.h master_fs/FileSystem.c master_fs/superblock.c master_fs/inode.c master_fs/block.h master_fs/block.c
+add_executable(DFS Master_Server/main.cpp master_fs/superblock.h master_fs/inode.h master_fs/FileSystem.h master_fs/FileSystem.c master_fs/superblock.c master_fs/inode.c master_fs/block.h master_fs/block.c
         utils/Network_utils.h utils/Network_utils.c Master_Server/Master_Server.cpp Master_Server/Master_Server.h utils/Server_Message.cpp utils/Server_Message.h Base_Classes/Inter_Server_Session.cpp Base_Classes/Inter_Server_Session.h Master_Server/Slaves_Group.cpp Master_Server/Slaves_Group.h Base_Classes/Server.h Base_Classes/Server_Group.cpp Base_Classes/Server_Group.h Master_Server/Initializing_ISS.h Master_Server/Clients_Group.cpp Master_Server/Clients_Group.h Master_Server/FS_Handler.cpp Master_Server/FS_Handler.h Master_Server/Initializing_ISS.cpp)
 
 TARGET_LINK_LIBRARIES(DFS ${USED_LIBS})

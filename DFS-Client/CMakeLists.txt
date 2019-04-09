@@ -18,10 +18,13 @@ if(Boost_FOUND)
 endif(Boost_FOUND)
 
 SET(USED_LIBS ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY} ${Boost_REGEX_LIBRARY})
+set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
+set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
 
-add_executable(DFS_client Client_Server/main_client_server.cpp Client_Server/Client_Server.cpp Client_Server/Client_Server.h Client_Server/main_client_server.cpp utils/Server_Message.h utils/Server_Message.cpp Base_Classes/Server.h Base_Classes/Server_Group.cpp Base_Classes/Server_Group.h)
 
-TARGET_LINK_LIBRARIES(DFS_client ${USED_LIBS} -lpthread -lm)
+add_executable(DFS_client Client_Server/main_client_server.cpp Client_Server/Client_Server.cpp Client_Server/Client_Server.h Client_Server/main_client_server.cpp utils/Server_Message.h utils/Server_Message.cpp Base_Classes/Server.h)
+
+TARGET_LINK_LIBRARIES(DFS_client ${USED_LIBS})
 
 
 

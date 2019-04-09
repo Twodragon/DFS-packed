@@ -18,8 +18,10 @@ if(Boost_FOUND)
 endif(Boost_FOUND)
 
 SET(USED_LIBS ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY} ${Boost_REGEX_LIBRARY})
+set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
+set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
 
-add_executable(DFS_slave slave_fs/superblock.h slave_fs/FileSystem.h slave_fs/FileSystem.c slave_fs/superblock.c slave_fs/block.h slave_fs/block.c Slave_Server/main_slave_server.cpp Slave_Server/Slave_Server.cpp Slave_Server/Slave_Server.h Slave_Server/main_slave_server.cpp utils/Server_Message.h utils/Server_Message.cpp Base_Classes/Server.h Base_Classes/Server_Group.cpp Base_Classes/Server_Group.h Slave_Server/Slave_FS_Handler.cpp Slave_Server/Slave_FS_Handler.h)
+add_executable(DFS_slave slave_fs/superblock.h slave_fs/FileSystem.h slave_fs/FileSystem.c slave_fs/superblock.c slave_fs/block.h slave_fs/block.c Slave_Server/main_slave_server.cpp Slave_Server/Slave_Server.cpp Slave_Server/Slave_Server.h Slave_Server/main_slave_server.cpp utils/Server_Message.h utils/Server_Message.cpp Base_Classes/Server.h  Slave_Server/Slave_FS_Handler.cpp Slave_Server/Slave_FS_Handler.h)
 
 TARGET_LINK_LIBRARIES(DFS_slave ${USED_LIBS} -lpthread -lm)
 

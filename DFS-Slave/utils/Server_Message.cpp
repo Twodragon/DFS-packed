@@ -1,6 +1,7 @@
 //
 // Created by Сергей Ефимочкин on 21.11.2018.
 //
+#define BOOST_USE_VALGRIND
 
 #include "Server_Message.h"
 #include <cstdio>
